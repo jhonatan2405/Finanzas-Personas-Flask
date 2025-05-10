@@ -1,0 +1,62 @@
+{% extends 'layout.html' %}
+
+{% block title %}Nuevo {{ tipo|capitalize }} - Sistema de Finanzas Personales{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header {% if tipo == 'ingreso' %}bg-success{% else %}bg-danger{% endif %} text-white text-center py-3">
+                <h4 class="mb-0">
+                    {% if tipo == 'ingreso' %}
+                        <i class="fas fa-arrow-down me-2"></i>Nuevo Ingreso
+                    {% else %}
+                        <i class="fas fa-arrow-up me-2"></i>Nuevo Gasto
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('finance.nuevo_ingreso' if tipo == 'ingreso' else 'finance.nuevo_gasto') }}">
+                    <div class="mb-3">
+                        <label for="categoria_id" class="form-label">Categoría</label>
+                        <select class="form-select" id="categoria_id" name="categoria_id" required>
+                            <option value="" selected disabled>Selecciona una categoría</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="monto" class="form-label">Monto</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="monto" name="monto" step="0.01" min="0.01" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="fecha" class="form-label">Fecha</label>
+                        <input type="date" class="form-control" id="fecha" name="fecha" value="{{ now.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn {% if tipo == 'ingreso' %}btn-success{% else %}btn-danger{% endif %} btn-lg">
+                            {% if tipo == 'ingreso' %}
+                                <i class="fas fa-check-circle me-2"></i>Registrar Ingreso
+                            {% else %}
+                                <i class="fas fa-check-circle me-2"></i>Registrar Gasto
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

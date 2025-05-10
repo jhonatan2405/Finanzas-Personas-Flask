@@ -1,0 +1,63 @@
+{% extends 'layout.html' %}
+
+{% block title %}Editar Movimiento - Sistema de Finanzas Personales{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header {% if movimiento.tipo == 'ingreso' %}bg-success{% else %}bg-danger{% endif %} text-white text-center py-3">
+                <h4 class="mb-0">
+                    {% if movimiento.tipo == 'ingreso' %}
+                        <i class="fas fa-edit me-2"></i>Editar Ingreso
+                    {% else %}
+                        <i class="fas fa-edit me-2"></i>Editar Gasto
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('finance.editar_movimiento', movimiento_id=movimiento.id) }}">
+                    <div class="mb-3">
+                        <label for="categoria_id" class="form-label">Categoría</label>
+                        <select class="form-select" id="categoria_id" name="categoria_id" required>
+                            <option value="" disabled>Selecciona una categoría</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}" {% if categoria.id == movimiento.categoria_id %}selected{% endif %}>
+                                    {{ categoria.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="monto" class="form-label">Monto</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="monto" name="monto" step="0.01" min="0.01" value="{{ movimiento.monto }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="2">{{ movimiento.descripcion }}</textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="fecha" class="form-label">Fecha</label>
+                        <input type="date" class="form-control" id="fecha" name="fecha" value="{{ movimiento.fecha.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn {% if movimiento.tipo == 'ingreso' %}btn-success{% else %}btn-danger{% endif %} btn-lg">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                        <a href="{{ url_for('finance.movimientos') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

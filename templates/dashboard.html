@@ -1,0 +1,285 @@
+{% extends 'layout.html' %}
+
+{% block title %}Dashboard - Sistema de Finanzas Personales{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="h3 mb-0">Dashboard Financiero</h1>
+        <p class="text-muted">Resumen de tus finanzas personales</p>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <form class="d-inline-flex" method="GET" action="{{ url_for('finance.dashboard') }}">
+                <select name="mes" class="form-select me-2">
+                    <option value="1" {% if mes_actual==1 %}selected{% endif %}>Enero</option>
+                    <option value="2" {% if mes_actual==2 %}selected{% endif %}>Febrero</option>
+                    <option value="3" {% if mes_actual==3 %}selected{% endif %}>Marzo</option>
+                    <option value="4" {% if mes_actual==4 %}selected{% endif %}>Abril</option>
+                    <option value="5" {% if mes_actual==5 %}selected{% endif %}>Mayo</option>
+                    <option value="6" {% if mes_actual==6 %}selected{% endif %}>Junio</option>
+                    <option value="7" {% if mes_actual==7 %}selected{% endif %}>Julio</option>
+                    <option value="8" {% if mes_actual==8 %}selected{% endif %}>Agosto</option>
+                    <option value="9" {% if mes_actual==9 %}selected{% endif %}>Septiembre</option>
+                    <option value="10" {% if mes_actual==10 %}selected{% endif %}>Octubre</option>
+                    <option value="11" {% if mes_actual==11 %}selected{% endif %}>Noviembre</option>
+                    <option value="12" {% if mes_actual==12 %}selected{% endif %}>Diciembre</option>
+                </select>
+                <select name="anio" class="form-select">
+                    {% for year in range(anio_actual - 2, anio_actual + 1) %}
+                    <option value="{{ year }}" {% if year==anio_actual %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-filter me-1"></i>Filtrar
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Tarjetas de resumen -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-success h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-success mb-0">Ingresos</h6>
+                        <h3 class="mt-2 mb-0">{{ resumen.total_ingresos | cop }}</h3>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-arrow-down text-success fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-danger h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-danger mb-0">Gastos</h6>
+                        <h3 class="mt-2 mb-0">{{ resumen.total_gastos | cop }}</h3>
+                    </div>
+                    <div class="bg-danger bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-arrow-up text-danger fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card {% if resumen.balance >= 0 %}border-info{% else %}border-warning{% endif %} h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="{% if resumen.balance >= 0 %}text-info{% else %}text-warning{% endif %} mb-0">Balance
+                        </h6>
+                        <h3 class="mt-2 mb-0">{{ resumen.balance | cop }}</h3>
+                    </div>
+                    <div
+                        class="{% if resumen.balance >= 0 %}bg-info{% else %}bg-warning{% endif %} bg-opacity-10 p-3 rounded">
+                        <i
+                            class="fas fa-balance-scale {% if resumen.balance >= 0 %}text-info{% else %}text-warning{% endif %} fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos y tablas -->
+<div class="row mb-4">
+    <!-- Gráfico de ingresos vs gastos -->
+    <div class="col-lg-8 mb-4 mb-lg-0">
+        <div class="card shadow h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Ingresos vs Gastos ({{ anio_actual }})</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="ingresoGastoChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribución de gastos -->
+    <div class="col-lg-4">
+        <div class="card shadow h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Distribución de Gastos</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="gastosPieChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Movimientos recientes -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Movimientos Recientes</h5>
+        <a href="{{ url_for('finance.movimientos') }}" class="btn btn-sm btn-outline-primary">
+            Ver todos <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th class="text-end">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if movimientos %}
+                    {% for m in movimientos[:5] %}
+                    <tr>
+                        <td>{{ m.fecha.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ m.categoria }}</td>
+                        <td>{{ m.descripcion }}</td>
+                        <td class="text-end {% if m.tipo == 'ingreso' %}text-success{% else %}text-danger{% endif %}">
+                            {{ "+" if m.tipo == 'ingreso' else "-" }}{{ m.monto | cop }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-3">No hay movimientos registrados</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones rápidas -->
+<div class="row">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <a href="{{ url_for('finance.nuevo_ingreso') }}" class="card shadow h-100 text-decoration-none">
+            <div class="card-body text-center py-4">
+                <div class="bg-success bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+                    <i class="fas fa-plus text-success fa-2x"></i>
+                </div>
+                <h5>Nuevo Ingreso</h5>
+                <p class="text-muted mb-0">Registra un nuevo ingreso</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-4">
+        <a href="{{ url_for('finance.nuevo_gasto') }}" class="card shadow h-100 text-decoration-none">
+            <div class="card-body text-center py-4">
+                <div class="bg-danger bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+                    <i class="fas fa-minus text-danger fa-2x"></i>
+                </div>
+                <h5>Nuevo Gasto</h5>
+                <p class="text-muted mb-0">Registra un nuevo gasto</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-4">
+        <a href="{{ url_for('finance.movimientos', tipo='ingreso') }}" class="card shadow h-100 text-decoration-none">
+            <div class="card-body text-center py-4">
+                <div class="bg-info bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+                    <i class="fas fa-list-ul text-info fa-2x"></i>
+                </div>
+                <h5>Ver Ingresos</h5>
+                <p class="text-muted mb-0">Lista de todos tus ingresos</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-4">
+        <a href="{{ url_for('finance.movimientos', tipo='gasto') }}" class="card shadow h-100 text-decoration-none">
+            <div class="card-body text-center py-4">
+                <div class="bg-warning bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+                    <i class="fas fa-list-ul text-warning fa-2x"></i>
+                </div>
+                <h5>Ver Gastos</h5>
+                <p class="text-muted mb-0">Lista de todos tus gastos</p>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Datos para el gráfico de ingresos vs gastos
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('{{ url_for("finance.api_datos_grafico", anio=anio_actual) }}')
+            .then(response => response.json())
+            .then(data => {
+                // Gráfico de ingresos vs gastos
+                const ingresoGastoCtx = document.getElementById('ingresoGastoChart').getContext('2d');
+                new Chart(ingresoGastoCtx, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function (value) {
+                                        return '$' + value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Gráfico de distribución de gastos
+                const gastosPieCtx = document.getElementById('gastosPieChart').getContext('2d');
+
+                // Preparar datos para el gráfico de torta
+                const gastosPorCategoria = {{ resumen.gastos_por_categoria| tojson
+            }};
+
+    new Chart(gastosPieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: gastosPorCategoria.map(item => item.nombre),
+            datasets: [{
+                data: gastosPorCategoria.map(item => item.total),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(255, 159, 64, 0.7)',
+                    'rgba(199, 199, 199, 0.7)',
+                    'rgba(83, 102, 255, 0.7)',
+                    'rgba(40, 159, 64, 0.7)',
+                    'rgba(210, 199, 199, 0.7)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: $${value.toFixed(2)} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+            });
+    });
+</script>
+{% endblock %}

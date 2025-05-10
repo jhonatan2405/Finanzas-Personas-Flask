@@ -1,0 +1,130 @@
+{% extends 'layout.html' %}
+
+{% block title %}Movimientos - Sistema de Finanzas Personales{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="h3 mb-0">
+            {% if tipo_filtro == 'ingreso' %}
+                <i class="fas fa-arrow-down text-success me-2"></i>Ingresos
+            {% elif tipo_filtro == 'gasto' %}
+                <i class="fas fa-arrow-up text-danger me-2"></i>Gastos
+            {% else %}
+                <i class="fas fa-exchange-alt me-2"></i>Todos los Movimientos
+            {% endif %}
+        </h1>
+        <p class="text-muted">
+            {% if mes_filtro and anio_filtro %}
+                {{ ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][mes_filtro - 1] }} {{ anio_filtro }}
+            {% else %}
+                Historial completo
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <form class="d-inline-flex" method="GET" action="{{ url_for('finance.movimientos') }}">
+            {% if tipo_filtro %}
+                <input type="hidden" name="tipo" value="{{ tipo_filtro }}">
+            {% endif %}
+            <select name="mes" class="form-select me-2">
+                <option value="">Todos los meses</option>
+                <option value="1" {% if mes_filtro == 1 %}selected{% endif %}>Enero</option>
+                <option value="2" {% if mes_filtro == 2 %}selected{% endif %}>Febrero</option>
+                <option value="3" {% if mes_filtro == 3 %}selected{% endif %}>Marzo</option>
+                <option value="4" {% if mes_filtro == 4 %}selected{% endif %}>Abril</option>
+                <option value="5" {% if mes_filtro == 5 %}selected{% endif %}>Mayo</option>
+                <option value="6" {% if mes_filtro == 6 %}selected{% endif %}>Junio</option>
+                <option value="7" {% if mes_filtro == 7 %}selected{% endif %}>Julio</option>
+                <option value="8" {% if mes_filtro == 8 %}selected{% endif %}>Agosto</option>
+                <option value="9" {% if mes_filtro == 9 %}selected{% endif %}>Septiembre</option>
+                <option value="10" {% if mes_filtro == 10 %}selected{% endif %}>Octubre</option>
+                <option value="11" {% if mes_filtro == 11 %}selected{% endif %}>Noviembre</option>
+                <option value="12" {% if mes_filtro == 12 %}selected{% endif %}>Diciembre</option>
+            </select>
+            <select name="anio" class="form-select me-2">
+                <option value="">Todos los años</option>
+                {% for year in range(2020, 2031) %}
+                <option value="{{ year }}" {% if anio_filtro == year %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-filter me-1"></i>Filtrar
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Filtros rápidos -->
+<div class="mb-4">
+    <a href="{{ url_for('finance.movimientos') }}" class="btn {% if not tipo_filtro %}btn-primary{% else %}btn-outline-primary{% endif %} me-2">
+        <i class="fas fa-exchange-alt me-1"></i>Todos
+    </a>
+    <a href="{{ url_for('finance.movimientos', tipo='ingreso') }}" class="btn {% if tipo_filtro == 'ingreso' %}btn-success{% else %}btn-outline-success{% endif %} me-2">
+        <i class="fas fa-arrow-down me-1"></i>Ingresos
+    </a>
+    <a href="{{ url_for('finance.movimientos', tipo='gasto') }}" class="btn {% if tipo_filtro == 'gasto' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+        <i class="fas fa-arrow-up me-1"></i>Gastos
+    </a>
+</div>
+
+<!-- Tabla de movimientos -->
+<div class="card shadow">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th class="text-end">Monto</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if movimientos %}
+                        {% for m in movimientos %}
+                            <tr>
+                                <td>{{ m.fecha.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    {% if m.tipo == 'ingreso' %}
+                                        <span class="badge bg-success">Ingreso</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Gasto</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ m.categoria }}</td>
+                                <td>{{ m.descripcion }}</td>
+                                <td class="text-end {% if m.tipo == 'ingreso' %}text-success{% else %}text-danger{% endif %}">
+                                    {{ "+" if m.tipo == 'ingreso' else "-" }}{{ m.monto|cop }}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('finance.editar_movimiento', movimiento_id=m.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('finance.eliminar_movimiento_route', movimiento_id=m.id) }}" 
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('¿Estás seguro de eliminar este movimiento?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <p class="mb-0">No hay movimientos que coincidan con los filtros seleccionados</p>
+                                <a href="{{ url_for('finance.movimientos') }}" class="btn btn-sm btn-outline-primary mt-2">
+                                    <i class="fas fa-sync-alt me-1"></i>Ver todos los movimientos
+                                </a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
