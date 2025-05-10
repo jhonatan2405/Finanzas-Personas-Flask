@@ -1,0 +1,5 @@
+## 🧾 Licencia
+
+Este proyecto está licenciado bajo los términos de la [Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/deed.es).
+
+Esto significa que puedes usar, modificar y compartir el código con atribución, **pero no con fines comerciales**.
