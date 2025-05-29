@@ -107,10 +107,11 @@ Finanzas-App/
 
 ![image](https://github.com/user-attachments/assets/5cf215f1-210d-4e93-917f-ebc1efae9622)
 ![image](https://github.com/user-attachments/assets/9c74af4c-ecdd-40e6-b933-f2c5e4933d87)
-![image](https://github.com/user-attachments/assets/3cef21e0-7d47-4383-8fb4-eac582b9b164)
+![image](https://github.com/user-attachments/assets/d7fbb743-0cca-401f-a5ce-47defe4dc086)
 ![image](https://github.com/user-attachments/assets/af8c7027-1e28-4b05-8102-177ec4bb287c)
 ![image](https://github.com/user-attachments/assets/cecaeca8-76d0-40ae-af8e-50852d28b3ff)
-![image](https://github.com/user-attachments/assets/9b872577-b9f8-411d-850d-2f5c958147ef)
+![image](https://github.com/user-attachments/assets/e3b6175d-3dcd-40ae-be9e-81cdc669d422)
+
 
 ## 👤 Autores
 
